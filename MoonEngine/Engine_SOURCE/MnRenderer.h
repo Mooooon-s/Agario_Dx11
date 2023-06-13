@@ -15,12 +15,17 @@ namespace renderer
 	};
 
 	extern Vertex vertices[];
+	extern Vertex CVertices[];
 	extern ID3D11InputLayout* triangleLayout;
 	extern Mn::Mesh* mesh;
+	extern Mn::Mesh* Circlemesh;
 	extern Mn::Shader* shader;
-	extern Mn::graphics::ConstantBuffer* constantBuffer;
+	extern Mn::Shader* Cicleshader;
+	extern std::vector<Mn::graphics::ConstantBuffer*> constantBuffer;
 
 	void Initialize();
 	void Release();
+
+	void Circle();
 
 }

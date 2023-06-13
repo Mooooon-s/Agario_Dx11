@@ -1,6 +1,6 @@
 #include "MnApplication.h"
-#include "MnTime.h"
 #include "MnInput.h"
+#include "MnTime.h"
 #include "MnRenderer.h"
 
 namespace Mn
@@ -10,9 +10,7 @@ namespace Mn
 		, _Hwnd(NULL)
 		, _Width(-1)
 		, _Height(-1)
-		, _Scene(nullptr)
 	{
-
 	}
 	Application::~Application()
 	{
@@ -52,6 +50,7 @@ namespace Mn
 
 		graphicDevice->Draw();
 		_Scene->Render();
+		graphicDevice->Present();
 	}
 
 	void Application::SetWindow(HWND hwnd, UINT width, UINT height)

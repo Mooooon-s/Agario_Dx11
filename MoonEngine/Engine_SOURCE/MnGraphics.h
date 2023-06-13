@@ -23,6 +23,8 @@ namespace Mn::graphics
 	enum class eCBType
 	{
 		Transform,
+		Color,
+		Radius,
 		End,
 	};
 

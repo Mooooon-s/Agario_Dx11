@@ -1,12 +1,16 @@
 #include "MnCircle.h"
-#define PI 3.1415926535
+#include "MnRenderer.h"
+#include "MnGraphicDevice_Dx11.h"
+#include "MnInput.h"
+#include "MnTime.h"
 
-namespace Mn::renderer
+namespace Mn
 {
 	Circle::Circle()
-		:buffer(30)
-		,vertices(nullptr)
-		,idxVertices(nullptr)
+		:_speed(3)
+		,_pos(Vector4::Zero)
+		,_radius(Vector4::Zero)
+		, _scale(1)
 	{
 	}
 	Circle::~Circle()
@@ -14,41 +18,67 @@ namespace Mn::renderer
 	}
 	void Circle::Initialize()
 	{
-		vertices = new Vertex[buffer];
-		idxVertices = new Vertex[90];
-		int i = 0;
-		for (double angle = 0.0f; angle <= PI * 2.0f; angle += PI / 10.0f) {
-			vertices[i].pos= Vector3((float)(0.25f * cos(angle)),(float)(0.25f * sin(angle)), 0.0f);
-			vertices[i].color = Vector4((float)(0.25f * cos(angle)), (float)(0.25f * sin(angle)), 1.0f , 1.0f);
-			i++;
-		}
-
-		Index();
+		_pos = Vector4::Zero;
+		_radius = Vector4(_scale,_scale,0.0f,1.0f);
 	}
-	void Circle::Index()
+	void Circle::Update()
 	{
-		idxVertices[0].pos = Vector3::Zero;
-		idxVertices[0].color = Vector4(1.0f,1.0f,1.0f,1.0f);
-
-		idxVertices[1].pos = vertices[1].pos;
-		idxVertices[2].pos = vertices[0].pos;
-		int i = 1;
-		for (int j = 0; j < 90; j+=3)
+		if (_pos.x >= 1 || _pos.x <= -1 || _pos.y >= 1 || _pos.y <= -1)
 		{
-			idxVertices[j].pos = Vector3::Zero;
-			idxVertices[j].color = Vector4(1.0f,1.0f,1.0f,1.0f);
-			for (int k = 1; k < 2; k ++)
+			if (_pos.x + (0.5 * _scale) >= 1)
 			{
-				idxVertices[j + k].pos = vertices[i].pos;
-				idxVertices[j + k+1].pos = vertices[i-1].pos;
-				i++;
+				_pos.x -= 0.1*Time::DeltaTime();
+			}
+			else if (_pos.x - (0.5 * _scale) <= -1)
+			{
+				_pos.x += 0.1 * Time::DeltaTime();
+			}
+			else if (_pos.y + (0.5 * _scale) >= 1)
+			{
+				_pos.y -= 0.1 * Time::DeltaTime();
+			}
+			else if (_pos.y - (0.5 * _scale) <= -1)
+			{
+				_pos.y += 0.1 * Time::DeltaTime();
 			}
 		}
+		else 
+		{
+			if (Input::GetKey(eKeyCode::W))
+			{
+				_pos += Vector4(0.0f, 0.1f, 0.0f, 1.0f) * _speed * Time::DeltaTime();
+			}
+			if (Input::GetKey(eKeyCode::A))
+			{
+				_pos += Vector4(-0.1f, 0.0f, 0.0f, 1.0f) * _speed * Time::DeltaTime();
+			}
+			if (Input::GetKey(eKeyCode::S))
+			{
+				_pos += Vector4(0.0f, -0.1f, 0.0f, 1.0f) * _speed * Time::DeltaTime();
+			}
+			if (Input::GetKey(eKeyCode::D))
+			{
+				_pos += Vector4(0.1f, 0.0f, 0.0f, 1.0f) * _speed * Time::DeltaTime();
+			}
 
-
+		}
 	}
-	double Circle::Degree2Radian(int degree)
+	void Circle::LateUpdate()
 	{
-		return (degree * PI) / 180;
+	}
+	void Circle::Render()
+	{
+		renderer::constantBuffer[0]->setData(&_pos);
+		renderer::constantBuffer[0]->Bind(eShaderStage::VS);
+		_color = Vector4(1.0f, 1.0f, 0.0f, 1.0f);
+		renderer::constantBuffer[1]->setData(&_color);
+		renderer::constantBuffer[1]->Bind(eShaderStage::VS);
+		_radius = Vector4(_scale,_scale,0.0f,1.0f);
+		renderer::constantBuffer[2]->setData(&_radius);
+		renderer::constantBuffer[2]->Bind(eShaderStage::VS);
+
+		renderer::Circlemesh->BindBuffer();
+		renderer::shader->binds();
+		graphics::GetDevice()->DrawIndexed(renderer::Circlemesh->GetIndexCount(), 0, 0);
 	}
 }

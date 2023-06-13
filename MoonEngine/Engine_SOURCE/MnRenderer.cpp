@@ -1,4 +1,5 @@
 #include "MnRenderer.h"
+#define PI 3.1415926535
 
 
 namespace renderer
@@ -7,9 +8,12 @@ namespace renderer
 	using namespace Mn::graphics;
 
 	Vertex vertices[4] = {};
+	Vertex Cvertices[31] = {};
 	Mn::Mesh* mesh = nullptr;
+	Mn::Mesh* Circlemesh = nullptr;
 	Mn::Shader* shader = nullptr;
-	Mn::graphics::ConstantBuffer* constantBuffer = nullptr;
+	Mn::Shader* Cicleshader=nullptr;
+	std::vector<Mn::graphics::ConstantBuffer*> constantBuffer;
 	
 	void SetupState()
 	{
@@ -47,13 +51,23 @@ namespace renderer
 		indices.push_back(2);
 		indices.push_back(3);
 		mesh->CreateIndexBuffer(indices.data(), indices.size());
-		
-		constantBuffer = new ConstantBuffer(eCBType::Transform);
-		constantBuffer->Create(sizeof(Vector4));
+
+		constantBuffer.push_back(new ConstantBuffer(eCBType::Transform));
+		constantBuffer.push_back(new ConstantBuffer(eCBType::Color));
+		constantBuffer.push_back(new ConstantBuffer(eCBType::Radius));
+		constantBuffer[0]->Create(sizeof(Vector4));
+		constantBuffer[1]->Create(sizeof(Vector4));
+		constantBuffer[2]->Create(sizeof(Vector4));
 
 		Vector4 _pos = Vector4(0.2f, 0.0f, 0.0f, 1.0f);
-		constantBuffer->setData(&_pos);
-		constantBuffer->Bind(eShaderStage::VS);
+		constantBuffer[0]->setData(&_pos);
+		constantBuffer[0]->Bind(eShaderStage::VS);
+		Vector4 _color = Vector4(0.2f, 0.0f, 0.0f, 1.0f);
+		constantBuffer[1]->setData(&_color);
+		constantBuffer[1]->Bind(eShaderStage::VS);
+		Vector4 _rdius = Vector4(1.0f, 1.0f, 0.0f, 1.0f);
+		constantBuffer[2]->setData(&_rdius);
+		constantBuffer[2]->Bind(eShaderStage::VS);
 	}
 
 	void LoadShader()
@@ -77,6 +91,8 @@ namespace renderer
 		vertices[3].pos = Vector3(-0.5f, -0.5f, 0.0f);
 		vertices[3].color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 
+		Circle();
+
 
 		LoadBuffer();
 		LoadShader();
@@ -86,6 +102,29 @@ namespace renderer
 	{
 		delete mesh;
 		delete shader;
-		delete constantBuffer;
+	}
+
+	void Circle()
+	{
+		int i = 1;
+		Cvertices[0].pos = Vector3(0.0f, 0.0f, 0.0f);
+		Cvertices[0].color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+		for (double angle = 0.0f; angle <= PI * 2.0f; angle += PI / 10.0f) {
+			Cvertices[i].pos = Vector3((float)(0.05f * cos(angle)), (float)(0.05f * sin(angle)), 0.0f);
+			Cvertices[i].color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+			i++;
+		}
+		Circlemesh = new Mn::Mesh();
+		Circlemesh->CreateVertexBuffer(Cvertices, 31);
+
+		std::vector<UINT> Circleindices = {};
+
+		for (int j = 2; j < 90; j ++)
+		{
+			Circleindices.push_back(0);
+			Circleindices.push_back(j);
+			Circleindices.push_back(j-1);
+		}
+		Circlemesh->CreateIndexBuffer(Circleindices.data(), Circleindices.size());
 	}
 }

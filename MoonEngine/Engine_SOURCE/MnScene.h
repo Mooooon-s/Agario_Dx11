@@ -1,6 +1,7 @@
 #pragma once
 #include "MnEntity.h"
 #include "MnGameObject.h"
+#include "MnCircle.h"
 
 namespace Mn
 {
@@ -8,6 +9,8 @@ namespace Mn
 	{
 	private:
 		std::vector<GameObject*> _GameObjects;
+		Vector4 _playerPos;
+		Vector4 _foodPos;
 	public:
 		Scene();
 		virtual ~Scene();
