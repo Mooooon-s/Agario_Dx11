@@ -57,6 +57,7 @@ namespace Mn
 					v.push_back(num(engine));
 				}
 				_pos = Vector4(v[0], v[1], 0, 0);
+				_color = Vector4(v[0], v[1], 0, 0);
 				_respon = 0;
 			}
 		}
